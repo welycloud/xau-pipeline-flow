@@ -4,255 +4,260 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>XAU/USD AI Pipeline</title>
-<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<script src="https://unpkg.com/reactflow@11.11.4/dist/umd/reactflow.js" crossorigin></script>
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/reactflow@11.11.4/dist/umd/reactflow.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/reactflow@11.11.4/dist/style.css"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body,#root{width:100%;height:100%;overflow:hidden;background:#030810}
+.react-flow__controls{background:#0a1a28!important;border:1px solid #0a3040!important}
+.react-flow__controls-button{background:#0a1a28!important;border:none!important;fill:#00c8d2!important}
+.react-flow__attribution{display:none}
+</style>
 </head>
 <body>
 <div id="root"></div>
-<script>document.body.style.cssText="margin:0;background:#030810;overflow:hidden;width:100vw;height:100vh;";</script>
-<script type="text/babel" data-presets="react">
-const { ReactFlow, Background, Controls, Handle, Position, MarkerType, ReactFlowProvider } = ReactFlowLib;
-const { useState } = React;
+<script>
+window.addEventListener('load', function() {
 
-function Tag({ children, color }) {
-  const c = color === "gold" ? "245,190,50" : color === "blue" ? "80,144,240" : "0,200,210";
-  const hex = color === "gold" ? "#f5be32" : color === "blue" ? "#5090f0" : "#00c8d2";
-  return (
-    <div style={{
-      background: "rgba("+c+",0.06)", border: "1px solid "+hex+"44",
-      borderRadius: 10, padding: "9px 14px", textAlign: "center"
-    }}>{children}</div>
+var e = React.createElement;
+var RFLib = window.ReactFlowLib;
+
+if (!RFLib) {
+  document.getElementById('root').innerHTML =
+    '<div style="color:red;padding:20px">ReactFlow no cargo: ' + Object.keys(window).filter(function(k){return k.toLowerCase().includes('flow')}) + '</div>';
+  return;
+}
+
+var ReactFlow = RFLib.ReactFlow || RFLib.default;
+var Background = RFLib.Background;
+var Controls = RFLib.Controls;
+var Handle = RFLib.Handle;
+var Position = RFLib.Position;
+var MarkerType = RFLib.MarkerType;
+var ReactFlowProvider = RFLib.ReactFlowProvider;
+
+// ── Styles ──────────────────────────────────────────────
+var S = {
+  triggerNode: {
+    background:'linear-gradient(160deg,#0a1628,#0d2a3a)',
+    border:'2px solid #00c8d2', borderRadius:14, padding:'20px 18px',
+    width:192, textAlign:'center', color:'#fff',
+    boxShadow:'0 0 24px rgba(0,200,210,0.35)', fontFamily:'system-ui,sans-serif'
+  },
+  claudeNode: {
+    background:'linear-gradient(160deg,#130c02,#0d1408)',
+    border:'2px solid #f5be32', borderRadius:16, width:465,
+    color:'#fff', overflow:'hidden',
+    boxShadow:'0 0 36px rgba(245,190,50,0.3)', fontFamily:'system-ui,sans-serif'
+  },
+  ntfyNode: {
+    background:'linear-gradient(160deg,#0a1628,#0d2a3a)',
+    border:'2px solid #00c8d2', borderRadius:14, padding:'20px 18px',
+    width:178, textAlign:'center', color:'#fff',
+    boxShadow:'0 0 24px rgba(0,200,210,0.35)', fontFamily:'system-ui,sans-serif'
+  },
+  phoneNode: {
+    background:'linear-gradient(160deg,#0a1020,#0d1a34)',
+    border:'2px solid #5090f0', borderRadius:14, padding:'18px 16px',
+    width:168, textAlign:'center', color:'#fff',
+    boxShadow:'0 0 22px rgba(80,144,240,0.35)', fontFamily:'system-ui,sans-serif'
+  }
+};
+
+function handle(type, pos, style) {
+  return e(Handle, {type:type, position:pos, style:Object.assign({width:10,height:10,border:'2px solid #fff'},style)});
+}
+
+function TriggerNode(props) {
+  return e('div', {style:S.triggerNode},
+    handle('source', Position.Right, {background:'#00c8d2'}),
+    e('div', {style:{fontSize:34,marginBottom:8}}, '⏰'),
+    e('div', {style:{fontSize:10,color:'#00c8d2',fontWeight:700,letterSpacing:'2px',marginBottom:4}}, 'DISPARADOR'),
+    e('div', {style:{fontSize:16,fontWeight:700,marginBottom:10}}, 'GitHub Actions'),
+    e('div', {style:{fontSize:11,color:'#5abac0',lineHeight:1.6}}, 'Lun–Vie · Hora fija · ',
+      e('span', {style:{color:'#00c8d2'}}, 'Nube · Sin PC encendida')),
+    e('div', {style:{marginTop:12,background:'rgba(0,200,210,0.08)',border:'1px solid rgba(0,200,210,0.2)',
+      borderRadius:8,padding:'6px 10px',fontSize:10,color:'#4a9ca0'}},
+      '⚡ Cron job gratuito | GitHub-hosted runner')
   );
 }
 
-function TNode({ data }) {
-  return (
-    <div style={{
-      background:"linear-gradient(160deg,#0a1628,#0d2a3a)",
-      border:"2px solid #00c8d2",borderRadius:14,padding:"20px 18px",
-      width:192,textAlign:"center",color:"#fff",
-      boxShadow:"0 0 24px rgba(0,200,210,0.35)"
-    }}>
-      <Handle type="source" position={Position.Right}
-        style={{background:"#00c8d2",border:"2px solid #fff",width:10,height:10}} />
-      <div style={{fontSize:34,marginBottom:8}}>⏰</div>
-      <div style={{fontSize:10,color:"#00c8d2",fontWeight:700,letterSpacing:"2px",marginBottom:4}}>DISPARADOR</div>
-      <div style={{fontSize:16,fontWeight:700,marginBottom:10}}>GitHub Actions</div>
-      <div style={{fontSize:11,color:"#5abac0",lineHeight:1.6}}>
-        Lun–Vie · Hora fija<br/><span style={{color:"#00c8d2"}}>Nube · Sin PC encendida</span>
-      </div>
-      <div style={{marginTop:12,background:"rgba(0,200,210,0.08)",border:"1px solid rgba(0,200,210,0.2)",
-        borderRadius:8,padding:"6px 10px",fontSize:10,color:"#4a9ca0"}}>
-        ⚡ Cron job gratuito<br/>GitHub-hosted runner
-      </div>
-    </div>
+var dataSources = [
+  ['📈','XAU/USD','Precio oro en vivo'],
+  ['💵','DXY','Índice del dólar'],
+  ['📉','Bono 10Y','Tasas EE.UU.'],
+  ['📅','Calendario','Económico macro'],
+  ['📰','Titulares','Noticias relevantes']
+];
+var outputs = [['🌐','Contexto macro'],['📊','Niveles clave XAU'],['🎯','Plan operativo']];
+
+function ClaudeNode(props) {
+  return e('div', {style:S.claudeNode},
+    handle('target', Position.Left, {background:'#00c8d2', top:75}),
+    handle('source', Position.Right, {background:'#00c8d2', top:75}),
+    // Header
+    e('div', {style:{padding:'14px 20px 12px',borderBottom:'1px solid rgba(245,190,50,0.18)',
+      textAlign:'center',background:'rgba(245,190,50,0.04)'}},
+      e('div', {style:{fontSize:10,color:'#f5be32',fontWeight:700,letterSpacing:'2.5px',marginBottom:3}}, 'ASISTENTE IA'),
+      e('div', {style:{fontSize:19,fontWeight:700,marginBottom:2}}, 'Claude API'),
+      e('div', {style:{fontSize:10,color:'#6a5030'}}, 'Búsqueda web · Análisis · Generación')
+    ),
+    // Body
+    e('div', {style:{display:'flex'}},
+      // Left: data sources
+      e('div', {style:{flex:1,padding:'14px',borderRight:'1px solid rgba(245,190,50,0.12)'}},
+        e('div', {style:{fontSize:9,color:'#00c8d2',fontWeight:700,letterSpacing:'1.5px',marginBottom:10}}, 'FUENTES DE DATOS WEB'),
+        dataSources.map(function(src) {
+          return e('div', {key:src[1], style:{display:'flex',alignItems:'center',gap:8,marginBottom:7,
+            background:'rgba(0,200,210,0.05)',borderRadius:7,padding:'5px 8px',
+            border:'1px solid rgba(0,200,210,0.1)'}},
+            e('span', {style:{fontSize:13}}, src[0]),
+            e('div', null,
+              e('div', {style:{fontSize:11,fontWeight:600,color:'#d4c070'}}, src[1]),
+              e('div', {style:{fontSize:9,color:'#5a5020'}}, src[2])
+            )
+          );
+        })
+      ),
+      // Center: Claude logo
+      e('div', {style:{width:96,display:'flex',flexDirection:'column',alignItems:'center',
+        justifyContent:'center',padding:'14px 8px'}},
+        e('div', {style:{width:56,height:56,borderRadius:'50%',
+          background:'radial-gradient(circle at 35% 35%,#f8d060,#c87808)',
+          display:'flex',alignItems:'center',justifyContent:'center',
+          fontSize:24,marginBottom:8,boxShadow:'0 0 24px rgba(245,190,50,0.6)'}}, '✦'),
+        e('div', {style:{fontSize:12,fontWeight:700,color:'#f5be32'}}, 'Claude'),
+        e('div', {style:{fontSize:8,color:'#7a6020',marginTop:4,textAlign:'center',lineHeight:1.5}}, 'Instrucciones precisas')
+      ),
+      // Right: outputs
+      e('div', {style:{flex:1,padding:'14px',borderLeft:'1px solid rgba(245,190,50,0.12)'}},
+        e('div', {style:{fontSize:9,color:'#32c87a',fontWeight:700,letterSpacing:'1.5px',marginBottom:10}}, 'GENERACIÓN DE BOLETÍN'),
+        outputs.map(function(o) {
+          return e('div', {key:o[1], style:{display:'flex',alignItems:'center',gap:8,marginBottom:9,
+            background:'rgba(50,200,122,0.08)',borderRadius:7,padding:'7px 10px',
+            border:'1px solid rgba(50,200,122,0.15)'}},
+            e('span', {style:{fontSize:14}}, o[0]),
+            e('div', {style:{fontSize:11,fontWeight:600,color:'#80d4a8'}}, o[1])
+          );
+        }),
+        e('div', {style:{marginTop:4,fontSize:9,color:'#2a8050',
+          borderTop:'1px solid rgba(50,200,122,0.1)',paddingTop:8,lineHeight:1.6}},
+          'Análisis autocontenido · sin intervención humana')
+      )
+    )
   );
 }
 
-function CNode({ data }) {
-  const datasources = [
-    ["📈","XAU/USD","Precio oro en vivo"],
-    ["💵","DXY","Índice del dólar"],
-    ["📉","Bono 10Y","Tasas EE.UU."],
-    ["📅","Calendario","Económico macro"],
-    ["📰","Titulares","Noticias relevantes"],
-  ];
-  const outputs = [["🌐","Contexto macro"],["📊","Niveles clave XAU"],["🎯","Plan operativo"]];
-  return (
-    <div style={{
-      background:"linear-gradient(160deg,#130c02,#0d1408)",
-      border:"2px solid #f5be32",borderRadius:16,width:465,
-      color:"#fff",overflow:"hidden",
-      boxShadow:"0 0 36px rgba(245,190,50,0.3)"
-    }}>
-      <Handle type="target" position={Position.Left}
-        style={{background:"#00c8d2",border:"2px solid #fff",width:10,height:10,top:75}} />
-      <Handle type="source" position={Position.Right}
-        style={{background:"#00c8d2",border:"2px solid #fff",width:10,height:10,top:75}} />
-      <div style={{padding:"14px 20px 12px",borderBottom:"1px solid rgba(245,190,50,0.18)",
-        textAlign:"center",background:"rgba(245,190,50,0.04)"}}>
-        <div style={{fontSize:10,color:"#f5be32",fontWeight:700,letterSpacing:"2.5px",marginBottom:3}}>ASISTENTE IA</div>
-        <div style={{fontSize:19,fontWeight:700,marginBottom:2}}>Claude API</div>
-        <div style={{fontSize:10,color:"#6a5030"}}>Búsqueda web · Análisis · Generación</div>
-      </div>
-      <div style={{display:"flex"}}>
-        <div style={{flex:1,padding:"14px",borderRight:"1px solid rgba(245,190,50,0.12)"}}>
-          <div style={{fontSize:9,color:"#00c8d2",fontWeight:700,letterSpacing:"1.5px",marginBottom:10}}>FUENTES DE DATOS WEB</div>
-          {datasources.map(([icon,label,sub])=>(
-            <div key={label} style={{display:"flex",alignItems:"center",gap:8,marginBottom:7,
-              background:"rgba(0,200,210,0.05)",borderRadius:7,padding:"5px 8px",
-              border:"1px solid rgba(0,200,210,0.1)"}}>
-              <span style={{fontSize:13}}>{icon}</span>
-              <div>
-                <div style={{fontSize:11,fontWeight:600,color:"#d4c070"}}>{label}</div>
-                <div style={{fontSize:9,color:"#5a5020"}}>{sub}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-        <div style={{width:96,display:"flex",flexDirection:"column",alignItems:"center",
-          justifyContent:"center",padding:"14px 8px"}}>
-          <div style={{width:56,height:56,borderRadius:"50%",
-            background:"radial-gradient(circle at 35% 35%,#f8d060,#c87808)",
-            display:"flex",alignItems:"center",justifyContent:"center",
-            fontSize:24,marginBottom:8,boxShadow:"0 0 24px rgba(245,190,50,0.6)"}}>✦</div>
-          <div style={{fontSize:12,fontWeight:700,color:"#f5be32"}}>Claude</div>
-          <div style={{fontSize:8,color:"#7a6020",marginTop:4,textAlign:"center",lineHeight:1.5}}>
-            Instrucciones<br/>precisas
-          </div>
-        </div>
-        <div style={{flex:1,padding:"14px",borderLeft:"1px solid rgba(245,190,50,0.12)"}}>
-          <div style={{fontSize:9,color:"#32c87a",fontWeight:700,letterSpacing:"1.5px",marginBottom:10}}>GENERACIÓN DE BOLETÍN</div>
-          {outputs.map(([icon,label])=>(
-            <div key={label} style={{display:"flex",alignItems:"center",gap:8,marginBottom:9,
-              background:"rgba(50,200,122,0.08)",borderRadius:7,padding:"7px 10px",
-              border:"1px solid rgba(50,200,122,0.15)"}}>
-              <span style={{fontSize:14}}>{icon}</span>
-              <div style={{fontSize:11,fontWeight:600,color:"#80d4a8"}}>{label}</div>
-            </div>
-          ))}
-          <div style={{marginTop:4,fontSize:9,color:"#2a8050",
-            borderTop:"1px solid rgba(50,200,122,0.1)",paddingTop:8,lineHeight:1.6}}>
-            Análisis autocontenido<br/>sin intervención humana
-          </div>
-        </div>
-      </div>
-    </div>
+function NtfyNode(props) {
+  return e('div', {style:S.ntfyNode},
+    handle('target', Position.Left, {background:'#00c8d2'}),
+    handle('source', Position.Right, {background:'#00c8d2'}),
+    e('div', {style:{fontSize:34,marginBottom:8}}, '🔔'),
+    e('div', {style:{fontSize:10,color:'#00c8d2',fontWeight:700,letterSpacing:'2px',marginBottom:4}}, 'ENTREGA'),
+    e('div', {style:{fontSize:16,fontWeight:700,marginBottom:10}}, 'ntfy.sh'),
+    e('div', {style:{fontSize:11,color:'#5abac0',lineHeight:1.6}}, 'Push gratuito · ',
+      e('span', {style:{color:'#00c8d2'}}, 'Sin fricción · 0 costo')),
+    e('div', {style:{marginTop:12,background:'rgba(0,200,210,0.08)',border:'1px solid rgba(0,200,210,0.2)',
+      borderRadius:8,padding:'6px 10px',fontSize:10,color:'#4a9ca0'}}, 'Open source · No auth required')
   );
 }
 
-function NNode({ data }) {
-  return (
-    <div style={{
-      background:"linear-gradient(160deg,#0a1628,#0d2a3a)",
-      border:"2px solid #00c8d2",borderRadius:14,padding:"20px 18px",
-      width:178,textAlign:"center",color:"#fff",
-      boxShadow:"0 0 24px rgba(0,200,210,0.35)"
-    }}>
-      <Handle type="target" position={Position.Left}
-        style={{background:"#00c8d2",border:"2px solid #fff",width:10,height:10}} />
-      <Handle type="source" position={Position.Right}
-        style={{background:"#00c8d2",border:"2px solid #fff",width:10,height:10}} />
-      <div style={{fontSize:34,marginBottom:8}}>🔔</div>
-      <div style={{fontSize:10,color:"#00c8d2",fontWeight:700,letterSpacing:"2px",marginBottom:4}}>ENTREGA</div>
-      <div style={{fontSize:16,fontWeight:700,marginBottom:10}}>ntfy.sh</div>
-      <div style=s{{fontSize:11,color:"#5abac0",lineHeight:1.6}}>
-        Push gratuito<br/><span style={{color:"#00c8d2"}}>Sin fricción · 0 costo</span>
-      </div>
-      <div style={{marginTop:12,background:"rgba(0,200,210,0.08)",border:"1px solid rgba(0,200,210,0.2)",
-        borderRadius:8,padding:"6px 10px",fontSize:10,color:"#4a9ca0"}}>
-        Open source<br/>No auth required
-      </div>
-    </div>
+function PhoneNode(props) {
+  return e('div', {style:S.phoneNode},
+    handle('target', Position.Left, {background:'#5090f0'}),
+    e('div', {style:{fontSize:34,marginBottom:8}}, '📱'),
+    e('div', {style:{fontSize:10,color:'#5090f0',fontWeight:700,letterSpacing:'2px',marginBottom:10}}, 'MI TELÉFONO'),
+    e('div', {style:{background:'#0d1424',border:'1px solid rgba(80,144,240,0.3)',
+      borderRadius:10,padding:'10px 12px',textAlign:'left',marginBottom:10}},
+      e('div', {style:{display:'flex',alignItems:'center',gap:6,marginBottom:6}},
+        e('span', {style:{fontSize:14}}, '📊'),
+        e('div', null,
+          e('div', {style:{fontSize:10,fontWeight:700,color:'#90b8f0'}}, 'Análisis XAU/USD'),
+          e('div', {style:{fontSize:9,color:'#4060a0'}}, 'ntfy.sh · ahora')
+        )
+      ),
+      e('div', {style:{fontSize:9,color:'#6080c0',lineHeight:1.5}},
+        'Oro +0.4% · DXY -0.1% · Resistencia: 2.340 · ',
+        e('span', {style:{color:'#5090f0'}}, 'Plan: esperar 2.310...')
+      )
+    ),
+    e('div', {style:{fontSize:9,color:'#3060b0',lineHeight:1.6}}, 'Cada mañana · Automático · Lun–Vie')
   );
 }
 
-function PNode({ data }) {
-  return (
-    <div style={{
-      background:"linear-gradient(160deg,#0a1020,#0d1a34)",
-      border:"2px solid #5090f0",borderRadius:14,padding:"18px 16px",
-      width:168,textAlign:"center",color:"#fff",
-      boxShadow:"0 0 22px rgba(80,144,240,0.35)"
-    }}>
-      <Handle type="target" position={Position.Left}
-        style={{background:"#5090f0",border:"2px solid #fff",width:10,height:10}} />
-      <div style={{fontSize:34,marginBottom:8}}>📱</div>
-      <div style={{fontSize:10,color:"#5090f0",fontWeight:700,letterSpacing:"2px",marginBottom:10}}>MI TECLEFOMO</div>
-      <div style={{background:"#0d1424",border:"1px solid rgba(80,144,240,0.3)",
-        borderRadius:10,padding:"10px 12px",textAlign:"left",marginBottom:10}}>
-        <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:6}}>
-          <span style={{fontSize:14}}>📊</pan>
-          <div>
-            <div style={{fontSize:10,fontWeight:700,color:"#90b8f0"}}>Análisis XAU/USD</div>
-            <div style={{fontSize:9,color:"#4060a0"}}>ntfy.sh · ahora</div>
-          </div>
-        </div>
-        <div style={{fontSize:9,color:"#6080c0",lineHeight:1.5}}>
-          Oro +0.4% · DXY -0.1%<br/>Resistencia: 2.340<br/>
-          <span style={{color:"#5090f0"}}>Plan: esperar 2.310...</span>
-        </div>
-      </div>
-      <div style={{fontSize:9,color:"#3060b0",lineHeight:1.6}}>
-        Cada mañana · Automático<br/>Lun–Vie antes de abrir
-      </div>
-    </div>
+function TagNode(props) {
+  var hex = props.data.color==='gold' ? '#f5be32' : '#00c8d2';
+  var rgb = props.data.color==='gold' ? '245,190,50' : '0,200,210';
+  return e('div', {style:{
+    background:'rgba('+rgb+',0.06)', border:'1px solid '+hex+'44',
+    borderRadius:10, padding:'9px 14px', textAlign:'center', minWidth:200,
+    fontFamily:'system-ui,sans-serif'
+  }},
+    e('div', {style:{fontSize:10,fontWeight:700,color:hex,letterSpacing:'0.5px',marginBottom:2}}, props.data.title),
+    props.data.sub && e('div', {style:{fontSize:9,color:hex+'88',lineHeight:1.5}}, props.data.sub)
   );
 }
 
-function TagNode({ data }) {
-  const hex = data.color==="gold" ? "#f5be32" : data.color==="blue" ? "#5090f0" : "#00c8d2";
-  const rgb = data.color==="gold" ? "245,190,50" : data.color==="blue" ? "80,144,240" : "0,200,210";
-  return (
-    <div style={{
-      background:"rgba("+rgb+",0.06)",border:"1px solid "+hex+"44",
-      borderRadius:10,padding:"9px 14px",textAlign:"center",minWidth:200
-    }}>
-      <div style={{fontSize:10,fontWeight:700,color:hex,letterSpacing:"0.5px",marginBottom:2}}>{data.title}</div>
-      {data.sub && <div style={{fontSize:9,color:hex+"88",lineHeight:1.5}}>{data.sub}</div>}
-    </div>
-  );
-}
+var nodeTypes = {trigger:TriggerNode, claude:ClaudeNode, ntfy:NtfyNode, phone:PhoneNode, tag:TagNode};
 
-const nodeTypes = { trigger:TNode, claude:CNode, ntfy:NNode, phone:PNode, tag:TagNode };
-
-const nodes = [
-  {id:"t1",type:"tag",position:{x:22,y:18},data:{title:"0 INFRAESTRUCTURA",sub:"PC Apagada · Sin servidores · Cero costo mensual",color:"teal"}},
-  {id:"t2",type:"tag",position:{x:22,y:468},data:{title:"CONSTRUIDO POR UN SOCIÓLOGO",sub:"No Ingeniero de Software · Curiosidad + unas tardes",color:"teal"}},
-  {id:"t3",type:"tag",position:{x:578,y:468},data:{title:"EL VERDADERO OBJETIVO",sub:"Orquestar IA + Automatización + Datos en vivo",color:"gold"}},
-  {id:"trigger",type:"trigger",position:{x:22,y:108},data:{}},
-  {id:"claude",type:"claude",position:{x:244,y:64},data:{}},
-  {id:"ntfy",type:"ntfy",position:{x:740,y:108},data:{}},
-  {id:"phone",type:"phone",position:{x:952,y:108},data:{}},
+var nodes = [
+  {id:'t1',type:'tag',position:{x:22,y:18},data:{title:'0 INFRAESTRUCTURA',sub:'PC Apagada · Sin servidores · Cero costo mensual',color:'teal'}},
+  {id:'t2',type:'tag',position:{x:22,y:468},data:{title:'CONSTRUIDO POR UN SOCIÓLOGO',sub:'No Ingeniero de Software · Curiosidad + unas tardes',color:'teal'}},
+  {id:'t3',type:'tag',position:{x:578,y:468},data:{title:'EL VERDADERO OBJETIVO',sub:'Orquestar IA + Automatización + Datos en vivo',color:'gold'}},
+  {id:'trigger',type:'trigger',position:{x:22,y:108},data:{}},
+  {id:'claude',type:'claude',position:{x:244,y:64},data:{}},
+  {id:'ntfy',type:'ntfy',position:{x:740,y:108},data:{}},
+  {id:'phone',type:'phone',position:{x:952,y:108},data:{}}
 ];
 
-const edges = [
-  {id:"e1",source:"trigger",target:"claude",animated:true,
-   label:"Dispara rutina",
-   labelStyle:{fill:"#00c8d2",fontWeight:700,fontSize:11},
-   labelBgStyle:{fill:"#030810",fillOpacity:0.9},
+var edges = [
+  {id:'e1',source:'trigger',target:'claude',animated:true,
+   label:'Dispara rutina',
+   labelStyle:{fill:'#00c8d2',fontWeight:700,fontSize:11},
+   labelBgStyle:{fill:'#030810',fillOpacity:0.9},
    labelBgPadding:[6,4],
-   style:{stroke:"#00c8d2",strokeWidth:2.5},
-   markerEnd:{type:"arrowclosed",color:"#00c8d2",width:18,height:18}},
-  {id:"e2",source:"claude",target:"ntfy",animated:true,
-   label:"Envía resultado",
-   labelStyle:{fill:"#00c8d2",fontWeight:700,fontSize:11},
-   labelBgStyle:{fill:"#030810",fillOpacity:0.9},
+   style:{stroke:'#00c8d2',strokeWidth:2.5},
+   markerEnd:{type:'arrowclosed',color:'#00c8d2',width:18,height:18}},
+  {id:'e2',source:'claude',target:'ntfy',animated:true,
+   label:'Envía resultado',
+   labelStyle:{fill:'#00c8d2',fontWeight:700,fontSize:11},
+   labelBgStyle:{fill:'#030810',fillOpacity:0.9},
    labelBgPadding:[6,4],
-   style:{stroke:"#00c8d2",strokeWidth:2.5},
-   markerEnd:{type:"arrowclosed",color:"#00c8d2",width:18,height:18}},
-  {id:"e3",source:"ntfy",target:"phone",animated:true,
-   label:"Lengan al teléfono",
-   labelStyle:{fill:"#5090f0",fontWeight:700,fontSize:11},
-   labelBgStyle:{fill:"#030810",fillOpacity:0.9},
+   style:{stroke:'#00c8d2',strokeWidth:2.5},
+   markerEnd:{type:'arrowclosed',color:'#00c8d2',width:18,height:18}},
+  {id:'e3',source:'ntfy',target:'phone',animated:true,
+   label:'Llega al teléfono',
+   labelStyle:{fill:'#5090f0',fontWeight:700,fontSize:11},
+   labelBgStyle:{fill:'#030810',fillOpacity:0.9},
    labelBgPadding:[6,4],
-   style:{stroke:"#5090f0",strokeWidth:2.5},
-   markerEnd:{type:"arrowclosed",color:"#5090f0",width:18,height:18}},
+   style:{stroke:'#5090f0',strokeWidth:2.5},
+   markerEnd:{type:'arrowclosed',color:'#5090f0',width:18,height:18}}
 ];
 
 function App() {
-  return (
-    <div style={{width:"100vw",height:"100vh",background:"#030810"}}>
-      <ReactFlow
-        nodes={nodes} edges={edges} nodeTypes={nodeTypes}
-        fitView fitViewOptions={{padding:0.1}}
-        proOptions={{hideAttribution:true}}
-        nodesDraggable={true} nodesConnectable={false}
-        minZoom={0.25} maxZoom={2}
-      >
-        <Background color="#0a2830" gap={40} size={1} variant="dots" />
-        <Controls />
-      </ReactFlow>
-    </div>
+  return e(ReactFlowProvider, null,
+    e('div', {style:{width:'100vw',height:'100vh',background:'#030810'}},
+      e(ReactFlow, {
+        nodes:nodes, edges:edges, nodeTypes:nodeTypes,
+        fitView:true, fitViewOptions:{padding:0.1},
+        proOptions:{hideAttribution:true},
+        nodesDraggable:true, nodesConnectable:false,
+        minZoom:0.25, maxZoom:2
+      },
+        e(Background, {color:'#0a2830', gap:40, size:1, variant:'dots'}),
+        e(Controls, null)
+      )
+    )
   );
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(
-  <ReactFlowProvider><App /></ReactFlowProvider>
-);
+var container = document.getElementById('root');
+var root = ReactDOM.createRoot(container);
+root.render(e(App, null));
+
+}); // end window.load
 </script>
 </body>
 </html>
